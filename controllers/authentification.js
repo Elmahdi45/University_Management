@@ -2,7 +2,7 @@ const {pool}=require('../database/db');
 const jwt=require('jsonwebtoken');
 const bcrypt=require('bcrypt');
 
-const SECRET="initialtest";
+const SECRET = process.env.JWT_SECRET;
 
 /*async function register(req,res){
       try{
@@ -54,7 +54,7 @@ async function login(req,res){
             },
             SECRET,
             {
-                 expiresIn:"1d"
+                 expiresIn: process.env.JWT_EXPIRES_IN
             }
           )
          return res.status(200).json({message:"Login success",token});

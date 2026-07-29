@@ -1,6 +1,6 @@
 const jwt=require('jsonwebtoken');
 
-const SECRET="initialtest"
+const SECRET = process.env.JWT_SECRET;
 
 function authentificationSecurity(req,res,next){
      const authHeader=req.headers.authorization;
