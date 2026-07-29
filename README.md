@@ -291,7 +291,9 @@ Through this project I practiced:
 
 **El Mehdi Khardi**
 
-- 💼 LinkedIn: www.linkedin.com/in/elmehdi-khardi
+- 💼 LinkedIn: www.linkedin.com/in/elmahdi-khardi-429422286
+
+
 - 💻 GitHub: https://github.com/Elmahdi45
 
 ---
