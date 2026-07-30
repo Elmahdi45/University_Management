@@ -12,6 +12,7 @@ const studentRouter=require('./routes/student');
 const teacherRouter=require('./routes/teacher');
 const anouncementRouter=require('./routes/anouncement');
 const departmentRouter=require('./routes/department');
+const classRouter=require('./routes/class');
 
 
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use('/students',studentRouter);
 app.use('/teacher',teacherRouter);
 app.use('/anouncement',anouncementRouter);
 app.use('/department',departmentRouter);
+app.use('/class',classRouter);
 
 app.listen(3000,()=>{
       console.log("Server is running");
