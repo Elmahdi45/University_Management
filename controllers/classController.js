@@ -170,7 +170,6 @@ async function deleteClass(req, res) {
                 message: "Invalid class id"
             });
         }
-
         const result = await pool.query(
             "DELETE FROM classes WHERE id = $1 RETURNING *",
             [id]
