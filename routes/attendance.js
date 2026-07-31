@@ -1,15 +1,14 @@
 const express=require('express');
 const router=express.Router();
 
-const { 
-     authentificationSecurity
-}=require('../middlwares/protectedAuth')
-
 const authorize=require('../middlwares/Authorize');
+const {
+     authentificationSecurity
+}=require('../middlwares/protectedAuth');
 
 const {
-    
-}=require('../controllers/TeachingAssignmentController');
-
+     
+     
+}=require('../controllers/attendanceController');
 
 module.exports=router;
