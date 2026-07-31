@@ -15,8 +15,8 @@ const departmentRouter=require('./routes/department');
 const classRouter=require('./routes/class');
 const moduleRouter=require('./routes/modules');
 const enrollmentRouter=require('./routes/enrollments');
-const teachingAssignmentRouter=require('./routes/TeachingAssignmentController');
-
+const teachingAssignmentRouter=require('./routes/TeachingAssignment');
+const attendanceRouter=require('./routes/attendance');
 
 app.use(express.json());
 
@@ -30,6 +30,7 @@ app.use('/class',classRouter);
 app.use('/module',moduleRouter);
 app.use('/enrollments',enrollmentRouter);
 app.use('/teachingAssignment',teachingAssignmentRouter);
+app.use('/attendance',attendanceRouter);
 
 
 app.listen(3000,()=>{
