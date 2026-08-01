@@ -17,6 +17,7 @@ const moduleRouter=require('./routes/modules');
 const enrollmentRouter=require('./routes/enrollments');
 const teachingAssignmentRouter=require('./routes/TeachingAssignment');
 const attendanceRouter=require('./routes/attendance');
+const gradeRouter=require('./routes/grades');
 
 app.use(express.json());
 
@@ -31,6 +32,7 @@ app.use('/module',moduleRouter);
 app.use('/enrollments',enrollmentRouter);
 app.use('/teachingAssignment',teachingAssignmentRouter);
 app.use('/attendance',attendanceRouter);
+app.use('/grades',gradeRouter);
 
 
 app.listen(3000,()=>{
