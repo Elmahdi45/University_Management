@@ -1,9 +1,15 @@
 
 require("dotenv").config();
-
 const express=require("express");
+const cors = require("cors");
 
 const app=express();
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+    })
+);
 
 
 const authRouter=require('./routes/auth');
@@ -18,7 +24,8 @@ const enrollmentRouter=require('./routes/enrollments');
 const teachingAssignmentRouter=require('./routes/TeachingAssignment');
 const attendanceRouter=require('./routes/attendance');
 const gradeRouter=require('./routes/grades');
-
+const assignmentRouter=require('./routes/assignment');
+const courseMaterialRouter=require('./routes/courseMaterial');
 app.use(express.json());
 
 app.use('/auth',authRouter);
@@ -33,7 +40,8 @@ app.use('/enrollments',enrollmentRouter);
 app.use('/teachingAssignment',teachingAssignmentRouter);
 app.use('/attendance',attendanceRouter);
 app.use('/grades',gradeRouter);
-
+app.use('/assignment',assignmentRouter);
+app.use('/course',courseMaterialRouter);
 
 app.listen(3000,()=>{
       console.log("Server is running");
