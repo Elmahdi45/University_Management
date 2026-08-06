@@ -26,6 +26,8 @@ const attendanceRouter=require('./routes/attendance');
 const gradeRouter=require('./routes/grades');
 const assignmentRouter=require('./routes/assignment');
 const courseMaterialRouter=require('./routes/courseMaterial');
+const submissionsRouter=require('./routes/submissions');
+const adminRouter=require('./routes/admins');
 app.use(express.json());
 
 app.use('/auth',authRouter);
@@ -42,7 +44,8 @@ app.use('/attendance',attendanceRouter);
 app.use('/grades',gradeRouter);
 app.use('/assignment',assignmentRouter);
 app.use('/course',courseMaterialRouter);
-
+app.use('/submissions',submissionsRouter);
+app.use('/admins',adminRouter);
 app.listen(3000,()=>{
       console.log("Server is running");
 });
