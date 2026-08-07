@@ -20,6 +20,15 @@ function Dashboard() {
        gender:"",
        class_id:0,
  });
+ const [newStudent,setNewStudent]=useState({
+       first_name:"",
+       last_name:"",
+       password:"",
+       phone:"",
+       gender:"",
+       class_id:0, 
+ })
+
  const [isOpen,setIsOpen]=useState(false);
 
 
@@ -73,6 +82,7 @@ const handleAddStudent = async (e) => {
         );
     }
 };
+
 
 
 const upcomingDeadlines = [
@@ -240,7 +250,7 @@ const upcomingDeadlines = [
 
       <div>
         <h1 className="text-3xl font-bold">
-          Good afternoon, {user?.first_name}
+          Hello, {user?.first_name}
         </h1>
 
         <p className="mt-1 text-slate-500">
@@ -725,14 +735,26 @@ const upcomingDeadlines = [
                             </div>
 
                              <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Gender</label>
-                                 <select name="gender" className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                     value={student.gender}
-                                     onChange={(e) => setStudent({ ...student, gender: e.target.value })}>
-                                     <option value="male">Male</option>
-                                     <option value="female">Female</option>
-                                 </select>
-                            </div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        Gender
+                                    </label>
+
+                                    <select
+                                        required
+                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                        value={student.gender}
+                                        onChange={(e) =>
+                                            setStudent({
+                                                ...student,
+                                                gender: e.target.value
+                                            })
+                                        }
+                                    >
+                                        <option value="">Select gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                </div>
 
 
                             <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
