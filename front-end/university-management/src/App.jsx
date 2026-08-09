@@ -7,6 +7,8 @@ import Students from "./pages/Admin/Students";
 import Teachers from "./pages/Admin/Teachers";
 import Registrars from "./pages/Admin/Registrars";
 import Departments from "./pages/Admin/Departments";
+import Classes from "./pages/Admin/Classes";
+import Modules from "./pages/Admin/Modules";
 
 function App() {
     return (
@@ -23,6 +25,8 @@ function App() {
             <Route path="/teachers" element={<Teachers></Teachers>}></Route>
             <Route path="/registrars" element={<Registrars></Registrars>}></Route>
             <Route path="/departments" element={<Departments></Departments>}></Route>
+            <Route path="/classes" element={<Classes></Classes>}></Route>
+            <Route path="/modules" element={<Modules></Modules>}></Route>
 
 
 
