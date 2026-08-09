@@ -28,10 +28,34 @@ function Dashboard() {
        gender:"",
        class_id:0, 
  })
-
+ const [modal,setModal]=useState("teacher");    
+ const [teachers,setTeachers]=useState([]);
+ const [teacher,setTeacher]=useState({
+        first_name:"",
+        last_name:"",
+        password:"",
+        phone:"",
+        gender:"",
+        department_id:0
+ })
+ 
  const [isOpen,setIsOpen]=useState(false);
+ const formData=modal==="teacher"?teacher:student;
+ const setFormData=modal==="teacher"?setTeacher:setStudent;
 
+async function loadTeachers(){
+       try{
+          const response=await api.get('/teacher',teachers);
+          setTeachers(response.data);
+       }
+       catch(err){
+          console.log(err);
+       }
+}
 
+useEffect(()=>{ 
+     loadTeachers();  
+},[])
 
 async function loadStudents(){
      try{
@@ -61,6 +85,25 @@ useEffect(() => {
 }, []);
 
 
+const handleAddTeacher=async(e)=>{   
+       e.preventDefault();
+       try{
+            const response = await api.post('/teacher',teacher);
+            alert(response.data.message);
+
+            setIsOpen(false);
+            loadTeachers();
+       }
+       catch(err){
+          console.log(err.response);
+
+        alert(
+            err.response?.data?.message ||
+            "Something went wrong"
+        );
+       }
+         
+}
 
 const handleAddStudent = async (e) => {
     e.preventDefault();
@@ -83,7 +126,11 @@ const handleAddStudent = async (e) => {
     }
 };
 
+const handleClick=(action)=>{
+      setModal(action==="Add Teacher"?"teacher":"student");
+      setIsOpen(true);
 
+}
 
 const upcomingDeadlines = [
   {
@@ -208,7 +255,7 @@ const upcomingDeadlines = [
     },
     {
       title: "Total Teachers",
-      value: 246,
+      value: teachers.length,
       icon: Users2,
       bg: "bg-green-100",
       color: "text-green-600",
@@ -245,9 +292,6 @@ const upcomingDeadlines = [
 
   return (
     <div className="p-8 space-y-8">
-
-      {/* Welcome */}
-
       <div>
         <h1 className="text-3xl font-bold">
           Hello, {user?.first_name}
@@ -258,7 +302,6 @@ const upcomingDeadlines = [
         </p>
       </div>
 
-      {/* Statistics */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
@@ -315,7 +358,7 @@ const upcomingDeadlines = [
                 <button
                     key={action.title}
                     className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 text-left transition hover:shadow-md hover:-translate-y-1"
-                    onClick={() => setIsOpen(true)} 
+                    onClick={()=>handleClick(action.title)} 
                 >
 
                     <div
@@ -669,32 +712,33 @@ const upcomingDeadlines = [
           <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 overflow-y-auto">
                 <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between">
-                             <h2 className="text-xl font-bold">Add a student</h2>
+                             <h2 className="text-xl font-bold">{modal==="teacher"?"Add teacher":"Add student"}</h2>
                              <span className="font-light w-4 hover:cursor-pointer" onClick={()=>setIsOpen(false)}>X</span>
                         </div>
 
-                        <form onSubmit={handleAddStudent} className="space-y-5">
+                        <form onSubmit={modal === "teacher" ? handleAddTeacher : handleAddStudent}
+                            className="space-y-5">
                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student first name</label>
+                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">{modal==="teacher"?"teacher first name":"student first name"}</label>
                                  <input
                                     type="text"
                                     placeholder="example Elmahdi"
                                     required
                                     className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={student.first_name}
-                                    onChange={(e) => setStudent({ ...student, first_name: e.target.value })}
+                                    value={formData.first_name}
+                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                                 />
                             </div>
 
                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Student last name</label>
+                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">{modal==="teacher"?"teacher last name":"student last name"}</label>
                                  <input
                                     type="text"
                                     placeholder="example khardi"
                                     required
                                     className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={student.last_name}
-                                    onChange={(e) => setStudent({ ...student, last_name: e.target.value })}
+                                    value={formData.last_name}
+                                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                                 />
                             </div>
 
@@ -705,8 +749,8 @@ const upcomingDeadlines = [
                                     placeholder="***********"
                                     required
                                     className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={student.password}
-                                    onChange={(e) => setStudent({ ...student, password: e.target.value })}
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
                             </div>
 
@@ -717,22 +761,31 @@ const upcomingDeadlines = [
                                     placeholder="Eg.+212 78809807"
                                     required
                                     className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={student.phone}
-                                    onChange={(e) => setStudent({ ...student, phone: e.target.value })}
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                 />
                             </div>
 
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Class</label>
-                                 <input
-                                    type="text"
-                                    placeholder="EX.1"
-                                    required
-                                    className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={student.class_id}
-                                    onChange={(e) => setStudent({ ...student, class_id: Number(e.target.value )})}
-                                />
-                            </div>
+                              <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        {modal === "teacher" ? "Department" : "Class"}
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        placeholder="EX.1"
+                                        required
+                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
+                                        value={modal === "teacher" ? formData.department_id : formData.class_id}
+                                        onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            [modal === "teacher" ? "department_id" : "class_id"]:
+                                            Number(e.target.value),
+                                        })
+                                        }
+                                    />
+                                    </div>
 
                              <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -742,10 +795,10 @@ const upcomingDeadlines = [
                                     <select
                                         required
                                         className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                        value={student.gender}
+                                        value={formData.gender}
                                         onChange={(e) =>
-                                            setStudent({
-                                                ...student,
+                                            setFormData({
+                                                ...formData,
                                                 gender: e.target.value
                                             })
                                         }
@@ -762,7 +815,7 @@ const upcomingDeadlines = [
                     type="button"
                     onClick={() => {
                       setIsOpen(false);
-                      setStudent({ first_name: "", last_name: "", password: "", phone: "" , gender:"" , class_id:0});
+                      setFormData({ first_name: "", last_name: "", password: "", phone: "" , gender:"" ,  [modal === "teacher" ? "department_id" : "class_id"]:0});
                     }}
                     className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
                   >

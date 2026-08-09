@@ -5,6 +5,7 @@ const bcrypt=require('bcrypt');
 
 async function createStudent(req,res){
        try{
+          
             const {first_name,last_name,password,phone,gender,class_id}=req.body;
             if(!first_name||!last_name||!password||!phone||!gender){
                  return res.status(400).json({message:"All fields are required"});

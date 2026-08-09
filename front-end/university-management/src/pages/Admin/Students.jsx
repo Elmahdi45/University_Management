@@ -33,7 +33,18 @@ const [selectedStudent, setSelectedStudent] = useState(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [modal, setModal] = useState("add"); 
+  const [search,setSearch]=useState("");
 
+
+
+  const handleSearch=(e)=>{ 
+        setSearch(e.target.value);
+  }
+
+const filteredStudents = students.filter((t) =>
+  t.first_name.toLowerCase().includes(search.toLowerCase()) ||
+  t.last_name.toLowerCase().includes(search.toLowerCase())
+);
 
   const formData = modal === "add" ? student : newStudent;
   const setFormData = modal === "add" ? setStudent : setNewStudent;
@@ -119,7 +130,6 @@ const confirmDelete = async () => {
       const response = await api.post("/students", student);
 
       alert(response.data.message);
-
       setIsOpen(false);
       loadStudents();
     } catch (err) {
@@ -160,13 +170,16 @@ const confirmDelete = async () => {
         <input
           type="text"
           placeholder="Search students..."
+          value={search}
+          onChange={handleSearch}
           className="border border-slate-300 rounded-lg px-4 py-2"
         />
 
         <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg">Filter</button>
       </TableHeader>
 
-      <DataTable columns={columns} data={students} onEdit={handleEdit} onDelete={handleDelete} />
+      <DataTable columns={columns} data={filteredStudents} onEdit={handleEdit} onDelete={handleDelete} />
+       
       <ConfirmDeleteModal
     isOpen={isDeleteOpen}
     onClose={() => {
@@ -176,7 +189,7 @@ const confirmDelete = async () => {
     onConfirm={confirmDelete}
     title="Delete student"
     message={`Are you sure you want to delete ${selectedStudent?.first_name} ${selectedStudent?.last_name}?`}
-/>
+/>  
 
       {isOpen && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 overflow-y-auto">
