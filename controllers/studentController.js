@@ -5,6 +5,7 @@ const bcrypt=require('bcrypt');
 
 async function createStudent(req,res){
        try{
+          
             const {first_name,last_name,password,phone,gender,class_id}=req.body;
             if(!first_name||!last_name||!password||!phone||!gender){
                  return res.status(400).json({message:"All fields are required"});
@@ -38,7 +39,7 @@ async function createStudent(req,res){
 }
 async function getStudents(req,res){
       try{
-          const result = await pool.query('select users.first_name,users.last_name,users.email,users.phone,users.gender,users.role_id, roles.name as role , classes.name as class_name,student_profiles.student_number as student_number ,student_profiles.class_id as class_id from users join roles on users.role_id=roles.id join student_profiles on users.id=student_profiles.user_id join classes on student_profiles.class_id=classes.id');
+          const result = await pool.query('select users.id, users.first_name,users.last_name,users.email,users.phone,users.gender,users.role_id, roles.name as role , classes.name as class_name,student_profiles.student_number as student_number ,student_profiles.class_id as class_id from users join roles on users.role_id=roles.id join student_profiles on users.id=student_profiles.user_id join classes on student_profiles.class_id=classes.id');
           if(result.rowCount===0){
               return res.status(404).json({message:"There are no students yet"});
           }

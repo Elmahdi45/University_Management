@@ -2,11 +2,11 @@ const {pool}=require('../database/db');
 
 async function createClass(req,res){
       try{
-            const {name,department_id}=req.body;
+            const {class_name,department_id}=req.body;
             if(isNaN(department_id)){
                      return res.status(400).json({message:"Invalid department id"});
             }
-            if(!name || !department_id){
+            if(!class_name || !department_id){
                    return res.status(400).json({mesasge:"Fields are required"});
             }
 
@@ -14,12 +14,11 @@ async function createClass(req,res){
             if(checkDepartmentId.rowCount===0){
                   return res.status(404).json({message:"No department with that id found"});
             }
-            const result=await pool.query('select classes.name as class_name,departments.name as department_name from classes join departments on classes.department_id=departments.id where classes.name=$1 and department_id=$2',[name,department_id]);
-
+const result=await pool.query('select classes.name as class_name,departments.name as department_name,classes.id from classes join departments on classes.department_id=departments.id where classes.name=$1 and department_id=$2',[class_name,department_id]);
             if(result.rowCount>0){
                   return res.status(409).json({message:"Class already exists"});
             }
-            const insert=await pool.query('insert into classes("name","department_id") values($1,$2) returning *',[name,department_id]);
+            const insert=await pool.query('insert into classes("name","department_id") values($1,$2) returning *',[class_name,department_id]);
             if(insert.rowCount===0){
                   return res.status(404).json({message:"No calss found"});
             }
@@ -36,7 +35,7 @@ async function createClass(req,res){
 
 async function getClasses(req,res){
       try{ 
-           const result=await pool.query('select classes.name as class_name,departments.name as department_name,departments.id as department_id from classes join departments on classes.department_id=departments.id');
+           const result=await pool.query('select classes.name as class_name, classes.id,departments.name as department_name,departments.id as department_id from classes join departments on classes.department_id=departments.id');
            if(result.rowCount===0){
               return res.status(404).json({message:"No classes found"});
            }
