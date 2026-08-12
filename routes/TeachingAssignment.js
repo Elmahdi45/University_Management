@@ -23,8 +23,8 @@ router.get('/get-my-teacher',authentificationSecurity,authorize(["Admin","Regist
 router.get('/get-my-teachingassignment',authentificationSecurity,authorize(["Admin","Registrar","Teacher"]),getMyTeacherAssignment);
 router.get('/get-my-students',authentificationSecurity,authorize(["Admin","Registrar","Teacher"]),getMyStudents);
 router.get('/:id',authentificationSecurity,authorize(["Admin","Registrar"]),getOneTeachingAssignment);
-router.put('edit-teachingAssignment',authentificationSecurity,authorize(["Admin","Registrar"]),editTeachingAssignment);
-router.delete('/delete-teachingAssignment',authentificationSecurity,authorize(["Admin","Registrar"]),deleteTeachingAssignment);
+router.put('/edit-teachingAssignment/:id',authentificationSecurity,authorize(["Admin","Registrar"]),editTeachingAssignment);
+router.delete('/delete-teachingAssignment/:id',authentificationSecurity,authorize(["Admin","Registrar"]),deleteTeachingAssignment);
 
 
 module.exports=router;

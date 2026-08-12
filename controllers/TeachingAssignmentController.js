@@ -1,65 +1,142 @@
 const {pool}=require('../database/db');
 
-async function createTeachingAssignment(req,res){
-       try{
-           const {teacher_id,module_id,class_id}=req.body;
-           if(!teacher_id || !module_id || !class_id){
-                return res.status(400).json({message:"All fields are required"});
-           }
-           const checkTeacher=await pool.query('select * from teacher_profiles where id=$1',[teacher_id]);
-           if(checkTeacher.rowCount===0){
-              return res.status(404).json({message:"No teacher found"});
-           }
-           const checkModule=await pool.query('Select * from modules where id=$1',[module_id]);
-           if(checkModule.rowCount===0){
-               return res.status(404).json({message:"No module found"});
-           }
+async function createTeachingAssignment(req, res) {
+    try {
+        const { teacher_id, module_id, class_id } = req.body;
 
-           const checkClass=await pool.query('select * from classes where id=$1',[class_id]);
-           if(checkModule.rowCount===0){
-              return res.status(404).json({message:"No class found"});
-           }
+        if (!teacher_id || !module_id || !class_id) {
+            return res.status(400).json({
+                message: "All fields are required"
+            });
+        }
 
-           const checkIfExists=await pool.query('select * from teaching_assignments where module_id=$1 and teacher_id=$2 and class_id=$3',[module_id,teacher_id,class_id]);
-           if(checkIfExists.rowCount>0){
-               return res.status(409).json({message:"Teaching Assignment already exists"});
-           }
-           const result=await pool.query('insert into teaching_assignments("teacher_id","class_id","module_id") values($1,$2,$3) returning *',[teacher_id,class_id,module_id]);
-           if(result.rowCount===0){
-               return res.status(404).json({message:"No teaching assignment found"});
-           }
-           return res.status(201).json({
-               message:"Teaching assignment created",
-               teaching_assignment:result.rows[0]
-           })
+        const checkTeacher = await pool.query(
+            "SELECT * FROM teacher_profiles WHERE id=$1",
+            [teacher_id]
+        );
 
-         
-       }
-       catch(err){
-           console.log(err);
-           return res.status(500).json({message:"Internal server error"});
-       }
+        if (checkTeacher.rowCount === 0) {
+            return res.status(404).json({
+                message: "No teacher found"
+            });
+        }
+
+        const checkModule = await pool.query(
+            "SELECT * FROM modules WHERE id=$1",
+            [module_id]
+        );
+
+        if (checkModule.rowCount === 0) {
+            return res.status(404).json({
+                message: "No module found"
+            });
+        }
+
+        const checkClass = await pool.query(
+            "SELECT * FROM classes WHERE id=$1",
+            [class_id]
+        );
+
+        if (checkClass.rowCount === 0) {
+            return res.status(404).json({
+                message: "No class found"
+            });
+        }
+
+        const checkIfExists = await pool.query(
+            `SELECT * FROM teaching_assignments
+             WHERE module_id=$1
+             AND teacher_id=$2
+             AND class_id=$3`,
+            [module_id, teacher_id, class_id]
+        );
+
+        if (checkIfExists.rowCount > 0) {
+            return res.status(409).json({
+                message: "Teaching Assignment already exists"
+            });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO teaching_assignments
+             ("teacher_id", "class_id", "module_id")
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [teacher_id, class_id, module_id]
+        );
+
+        return res.status(201).json({
+            message: "Teaching assignment created",
+            teaching_assignment: result.rows[0]
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        if (err.code === "23503") {
+            return res.status(400).json({
+                message: "Invalid teacher, module, or class"
+            });
+        }
+
+        if (err.code === "23505") {
+            return res.status(409).json({
+                message: "Teaching Assignment already exists"
+            });
+        }
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
 }
 
-async function getTeachingAssignment(req,res){
-        try{
-              const result=await pool.query(`select u.first_name as teacher_name,m.name as module_name
-                ,c.name as class_name,ta.id as teaching_assignment_id from teaching_assignments ta join modules m on ta.module_id=m.id join classes c on ta.class_id=c.id
-                  join teacher_profiles tp on ta.teacher_id=tp.id join users u on u.id=tp.user_id
-             `)
+async function getTeachingAssignment(req, res) {
+    try {
+        const result = await pool.query(`
+            SELECT
+                ta.id AS teaching_assignment_id,
+                ta.teacher_id,
+                ta.module_id,
+                ta.class_id,
 
-             if(result.rowCount===0){
-                  return res.status(404).json({message:"No teaching assignment found"});
-             }
-             return res.status(200).json(result.rows);
+                u.first_name AS teacher_name,
+                u.last_name AS teacher_last_name,
 
+                m.name AS module_name,
+                c.name AS class_name
+
+            FROM teaching_assignments ta
+
+            JOIN modules m
+                ON ta.module_id = m.id
+
+            JOIN classes c
+                ON ta.class_id = c.id
+
+            JOIN teacher_profiles tp
+                ON ta.teacher_id = tp.id
+
+            JOIN users u
+                ON u.id = tp.user_id
+        `);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                message: "No teaching assignment found"
+            });
         }
-        catch(err){
-              console.log(err);
-              return res.status(500).json({message:"Internal server error"});
-        }
+
+        return res.status(200).json(result.rows);
+
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
 }
-
 async function getOneTeachingAssignment(req,res){
       try{
           const id=Number(req.params.id);
@@ -381,25 +458,38 @@ async function editTeachingAssignment(req, res) {
     }
 }
 
-async function deleteTeachingAssignment(req,res){
-      try{
-         const id = Number(req.params.id);
+async function deleteTeachingAssignment(req, res) {
+    try {
+        const id = Number(req.params.id);
 
         if (isNaN(id)) {
             return res.status(400).json({
                 message: "Invalid teaching assignment id"
             });
         }
-         const result=await pool.query('delete from teaching_assignments where id=$1 returning *',[id]);
-         if(result.rowCount===0){
-              return res.status(404).json({message:"No teaching assignment found"});
-         }
-         return res.status(200).json({message:"Teaching assignment deleted!"});
-      }
-      catch(err){
-          console.log(err);
-          return res.status(500).json({message:"Internal server error"});
-      }
+
+        const result = await pool.query(
+            "DELETE FROM teaching_assignments WHERE id = $1 RETURNING *",
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                message: "Teaching assignment not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Teaching assignment deleted successfully"
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
 }
 module.exports={
      createTeachingAssignment,

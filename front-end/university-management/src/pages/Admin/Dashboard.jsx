@@ -28,6 +28,7 @@ function Dashboard() {
        gender:"",
        class_id:0, 
  })
+ const [enrollments,setEnrollments]=useState([]);
  const [modal,setModal]=useState("teacher");    
  const [teachers,setTeachers]=useState([]);
  const [teacher,setTeacher]=useState({
@@ -38,10 +39,82 @@ function Dashboard() {
         gender:"",
         department_id:0
  })
+
+ const [modules,setModules]=useState([]);
+ const [module,setModule]=useState({
+       name:"",
+       coefficient:0,
+       semester:""
+ })
+ const [departments,setDepartments]=useState([]);
+ const [department,setDepartment]=useState({
+      name:""
+ });
  
  const [isOpen,setIsOpen]=useState(false);
- const formData=modal==="teacher"?teacher:student;
- const setFormData=modal==="teacher"?setTeacher:setStudent;
+ const formData =
+    modal === "teacher"
+        ? teacher
+        : modal === "student"
+        ? student
+        : modal === "department"
+        ? department
+        : module;
+
+const setFormData =
+    modal === "teacher"
+        ? setTeacher
+        : modal === "student"
+        ? setStudent
+        : modal === "department"
+        ? setDepartment
+        : setModule;
+
+
+ async function loadEnrollments(){
+          try{
+               const response=await api.get('/enrollments');
+               setEnrollments(response.data);
+          }
+          catch(err){
+             console.log(err);
+          }
+    }
+    useEffect(()=>{
+         loadEnrollments();
+    },[])
+
+
+
+async function loadModules(){
+      try{
+          const response=await api.get('/module');
+          setModules(response.data);
+          
+      }
+      catch(err){
+          console.log(err);
+      }
+}
+
+useEffect(()=>{
+    loadModules();  
+},[])
+
+async function loadDepartments(){
+      try{
+          const response=await api.get('/department');
+          setDepartments(response.data);
+          
+      }
+      catch(err){
+          console.log(err);
+      }
+}
+
+useEffect(()=>{
+    loadDepartments();  
+},[])
 
 async function loadTeachers(){
        try{
@@ -126,11 +199,53 @@ const handleAddStudent = async (e) => {
     }
 };
 
-const handleClick=(action)=>{
-      setModal(action==="Add Teacher"?"teacher":"student");
-      setIsOpen(true);
-
+const handleAddDepartment=async (e)=>{
+        e.preventDefault();
+        try{
+             const response=await api.post('/department',department);
+             alert(response.data.message || "Department added");
+             setIsOpen(false);
+             setDepartment({
+                 name: ""
+            });
+            loadDepartments();
+        }
+        catch(err){
+            console.log(err);
+        }
 }
+const handleAddModule=async(e)=>{
+         e.preventDefault();
+         try{
+             const response=await api.post('/module',module);
+             alert(response.data.message ||"Module created!");
+             setModule({
+                 name:"",
+                 semester:"",
+                 coefficient:0
+             })
+             setIsOpen(false);
+             loadModules();
+             
+         }
+         catch(err){
+             console.log(err);
+         }
+}
+
+
+const handleClick = (action) => {
+    const modalType = {
+        "Add Teacher": "teacher",
+        "Add Student": "student",
+        "Add Department": "department",
+        "Add Module": "module",
+    };
+
+    setModal(modalType[action]);
+    setIsOpen(true);
+};
+
 
 const upcomingDeadlines = [
   {
@@ -153,27 +268,14 @@ const upcomingDeadlines = [
   },
 ];
 
-     const recentEnrollments = [
-  {
-    id: 1,
-    student: "Ahmed Benali",
-    class: "GI-3A",
-    date: "Today",
-  },
-  {
-    id: 2,
-    student: "Sara Idrissi",
-    class: "GI-2B",
-    date: "Yesterday",
-  },
-  {
-    id: 3,
-    student: "Youssef Amrani",
-    class: "GI-1A",
-    date: "2 days ago",
-  },
-];
-     const recentSubmissions = [
+const recentEnrollments = enrollments.slice(0, 3).map((enrollment) => ({
+    id: enrollment.id,
+    student: `${enrollment.student_first_name} ${enrollment.student_last_name}`,
+    created_by: enrollment.created_by_last_name,
+    created_at:enrollment.created_at
+}));
+
+const recentSubmissions = [
   {
     id: 1,
     student: "Ahmed Benali",
@@ -262,7 +364,7 @@ const upcomingDeadlines = [
     },
     {
       title: "Departments",
-      value: 12,
+      value: departments.length,
       icon: Building2,
       bg: "bg-purple-100",
       color: "text-purple-600",
@@ -603,9 +705,9 @@ const upcomingDeadlines = [
 
             </div>
 
-            <button className="text-indigo-600 hover:underline">
+            <Link to="/enrollments"><button className="text-indigo-600 hover:underline">
                 View All
-            </button>
+            </button></Link>
 
         </div>
 
@@ -614,27 +716,23 @@ const upcomingDeadlines = [
             {recentEnrollments.map((enrollment) => (
 
                 <div
-                    key={enrollment.id}
-                    className="flex justify-between items-center border-b border-slate-100 pb-4 last:border-none"
-                >
+                        key={enrollment.id}
+                        className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-b border-slate-100 pb-4 last:border-none"
+                    >
+                        <div className="min-w-0">
+                            <h3 className="font-semibold truncate">
+                                {enrollment.student}
+                            </h3>
 
-                    <div>
+                            <p className="text-sm text-slate-500 truncate">
+                                {enrollment.created_at}
+                            </p>
+                        </div>
 
-                        <h3 className="font-semibold">
-                            {enrollment.student}
-                        </h3>
-
-                        <p className="text-sm text-slate-500">
-                            {enrollment.class}
-                        </p>
-
+                        <span className="text-sm text-slate-500 shrink-0">
+                            {enrollment.created_by}
+                        </span>
                     </div>
-
-                    <span className="text-sm text-slate-500">
-                        {enrollment.date}
-                    </span>
-
-                </div>
 
             ))}
 
@@ -708,109 +806,254 @@ const upcomingDeadlines = [
 </div>
 
 </div>
+
+
       {isOpen && (
           <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4 overflow-y-auto">
                 <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between">
-                             <h2 className="text-xl font-bold">{modal==="teacher"?"Add teacher":"Add student"}</h2>
+                               <h2 className="text-xl font-bold">
+                                    {modal === "teacher"
+                                        ? "Add Teacher"
+                                        : modal === "student"
+                                        ? "Add Student"
+                                        : modal === "department"
+                                        ? "Add Department"
+                                        : "Add Module"}
+                                </h2>
                              <span className="font-light w-4 hover:cursor-pointer" onClick={()=>setIsOpen(false)}>X</span>
                         </div>
 
-                        <form onSubmit={modal === "teacher" ? handleAddTeacher : handleAddStudent}
+                        <form onSubmit={modal === "teacher" ? handleAddTeacher : modal==="student"?handleAddStudent: modal==="department"?handleAddDepartment:handleAddModule}
                             className="space-y-5">
-                            <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">{modal==="teacher"?"teacher first name":"student first name"}</label>
-                                 <input
-                                    type="text"
-                                    placeholder="example Elmahdi"
-                                    required
-                                    className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={formData.first_name}
-                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                                />
-                            </div>
-
-                            <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">{modal==="teacher"?"teacher last name":"student last name"}</label>
-                                 <input
-                                    type="text"
-                                    placeholder="example khardi"
-                                    required
-                                    className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={formData.last_name}
-                                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                                />
-                            </div>
-
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
-                                 <input
-                                    type="password"
-                                    placeholder="***********"
-                                    required
-                                    className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                />
-                            </div>
-
-                             <div>
-                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone</label>
-                                 <input
-                                    type="text"
-                                    placeholder="Eg.+212 78809807"
-                                    required
-                                    className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                />
-                            </div>
-
-                              <div>
+                            {modal === "department" && (
+                                <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        {modal === "teacher" ? "Department" : "Class"}
+                                        Department Name
                                     </label>
 
                                     <input
                                         type="text"
-                                        placeholder="EX.1"
+                                        placeholder="Example Computer Science"
                                         required
-                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-indigo-500 outline-none transition-all"
-                                        value={modal === "teacher" ? formData.department_id : formData.class_id}
+                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+                                        value={formData.name}
                                         onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            [modal === "teacher" ? "department_id" : "class_id"]:
-                                            Number(e.target.value),
-                                        })
-                                        }
-                                    />
-                                    </div>
-
-                             <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Gender
-                                    </label>
-
-                                    <select
-                                        required
-                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                        value={formData.gender}
-                                        onChange={(e) =>
-                                            setFormData({
+                                            setDepartment({
                                                 ...formData,
-                                                gender: e.target.value
+                                                name: e.target.value
                                             })
                                         }
-                                    >
-                                        <option value="">Select gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
+                                    />
                                 </div>
+                            )}
+
+                            {modal === "module" && (
+                              
+                                <div>
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        Module Name
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Example Computer Science"
+                                        required
+                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+                                        value={formData.name}
+                                        onChange={(e) =>
+                                        setFormData({
+                                                ...formData,
+                                                name: e.target.value
+                                            })
+                                        }
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        Module Coefficient
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Module coefficient"
+                                        required
+                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+                                        value={formData.coefficient}
+                                        onChange={(e) =>
+                                        setFormData({
+                                                ...formData,
+                                                coefficient: e.target.value
+                                            })
+                                        }
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        Module semester
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Module semester"
+                                        required
+                                        className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+                                        value={formData.semester}
+                                        onChange={(e) =>
+                                        setFormData({
+                                                ...formData,
+                                                semester: e.target.value
+                                            })
+                                        }
+                                    />
+                                  </div>
+                                </div>
+                                
+
+                                
+                            )}
+                 {(modal === "teacher" || modal === "student") && (
+    <>
+        {/* First name */}
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                First name
+            </label>
+
+            <input
+                type="text"
+                placeholder="Your first name"
+                required
+                value={formData.first_name}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        first_name: e.target.value
+                    })
+                }
+                className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+            />
+        </div>
+
+        {/* Last name */}
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Last name
+            </label>
+
+            <input
+                type="text"
+                placeholder="Your last name"
+                required
+                value={formData.last_name}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        last_name: e.target.value
+                    })
+                }
+                className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+            />
+        </div>
+
+        {/* Password */}
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Password
+            </label>
+
+            <input
+                type="password"
+                placeholder="Your password"
+                required
+                value={formData.password}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        password: e.target.value
+                    })
+                }
+                className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+            />
+        </div>
+
+        {/* Phone */}
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Phone
+            </label>
+
+            <input
+                type="text"
+                placeholder="Your phone number"
+                required
+                value={formData.phone}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        phone: e.target.value
+                    })
+                }
+                className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+            />
+        </div>
+
+        {/* Department/Class */}
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                {modal === "teacher" ? "Department ID" : "Class ID"}
+            </label>
+
+            <input
+                type="number"
+                required
+                value={
+                    modal === "teacher"
+                        ? formData.department_id
+                        : formData.class_id
+                }
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        [modal === "teacher"
+                            ? "department_id"
+                            : "class_id"]: Number(e.target.value)
+                    })
+                }
+                className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+            />
+        </div>
+
+        {/* Gender */}
+        <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Gender
+            </label>
+
+            <select
+                required
+                value={formData.gender}
+                onChange={(e) =>
+                    setFormData({
+                        ...formData,
+                        gender: e.target.value
+                    })
+                }
+                className="w-full border border-gray-300 bg-gray-50 p-3 rounded-xl"
+            >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+    </>
+)}
 
 
-                            <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
+             <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => {

@@ -1,88 +1,83 @@
-    import { Pencil, Trash2 } from "lucide-react";
+function DataTable({ columns, data, onEdit, onDelete }) {
+    const hasActions = onEdit || onDelete;
 
-    function DataTable({
-    columns,
-    data,
-    actions = true,
-    onEdit,
-    onDelete,
-    }) {
     return (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        {columns.map((column) => (
+                            <th
+                                key={column.accessor}
+                                className="px-6 py-4 text-sm font-semibold text-slate-700 whitespace-nowrap"
+                            >
+                                {column.header}
+                            </th>
+                        ))}
 
-            <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-                {columns.map((column) => (
-                <th
-                    key={column.accessor}
-                    className="px-6 py-4 text-left text-sm font-semibold text-slate-700"
-                >
-                    {column.header}
-                </th>
-                ))}
+                        {hasActions && (
+                            <th className="px-6 py-4 text-sm font-semibold text-slate-700 whitespace-nowrap">
+                                Actions
+                            </th>
+                        )}
+                    </tr>
+                </thead>
 
-                {actions && (
-                <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">
-                    Actions
-                </th>
-                )}
-            </tr>
-            </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {data.length > 0 ? (
+                        data.map((row, index) => (
+                            <tr
+                                key={row.id ?? index}
+                                className="hover:bg-slate-50 transition-colors"
+                            >
+                                {columns.map((column) => (
+                                    <td
+                                        key={column.accessor}
+                                        className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap"
+                                    >
+                                        {row[column.accessor]}
+                                    </td>
+                                ))}
 
-            <tbody>
+                                {hasActions && (
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-3">
+                                            {onEdit && (
+                                                <button
+                                                    onClick={() => onEdit(row)}
+                                                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                                                >
+                                                    Edit
+                                                </button>
+                                            )}
 
-            {data.map((row) => (
-
-                <tr
-                key={row.id}
-                className="border-b border-slate-100 hover:bg-slate-50 transition"
-                >
-
-                {columns.map((column) => (
-
-                    <td
-                    key={column.accessor}
-                    className="px-6 py-4 text-slate-700"
-                    >
-                    {row[column.accessor]}
-                    </td>
-
-                ))}
-
-                {actions && (
-                    <td className="px-6 py-4">
-
-                    <div className="flex justify-center gap-3">
-
-                        <button
-                        onClick={() => onEdit(row)}
-                        className="text-indigo-600 hover:text-indigo-800"
-                        >
-                        <Pencil size={18} />  
-                        </button>
-
-                        <button
-                        onClick={() => onDelete(row)}
-                        className="text-red-600 hover:text-red-800"
-                        >
-                        <Trash2 size={18} />
-                        </button>
-
-                    </div>
-
-                    </td>
-                )}
-
-                </tr>
-
-            ))}
-
-            </tbody>
-
-        </table>
+                                            {onDelete && (
+                                                <button
+                                                    onClick={() => onDelete(row)}
+                                                    className="text-red-600 hover:text-red-800 font-medium"
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                )}
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td
+                                colSpan={columns.length + (hasActions ? 1 : 0)}
+                                className="px-6 py-10 text-center text-slate-500"
+                            >
+                                No data found.
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         </div>
     );
-    }
+}
 
-    export default DataTable;
+export default DataTable;

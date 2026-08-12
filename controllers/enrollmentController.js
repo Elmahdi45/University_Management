@@ -151,56 +151,104 @@ async function getOneEnrollment(req,res){
       }
 }
 
-async function editEnrollment(req,res){
-       try{
-            const id=Number(req.params.id);
-            if(isNaN(id)){
-                  return res.status(400).json({message:"Invalid enrollment id"});
-            }
+async function editEnrollment(req, res) {
+    try {
+        const id = Number(req.params.id);
 
-            const {student_id,module_id}=req.body;
-            const queries=[];
-            const values=[];
-            const checkStudent = await pool.query(
-                "SELECT * FROM student_profiles WHERE id = $1",
-                    [student_id]
-                );
+        if (isNaN(id)) {
+            return res.status(400).json({
+                message: "Invalid enrollment id"
+            });
+        }
 
-                if (checkStudent.rowCount === 0) {
-                    return res.status(404).json({
-                        message: "No student found"
-                    });
-                }
+        const { student_id, module_id } = req.body;
 
+        const queries = [];
+        const values = [];
 
-           const checkModule=await pool.query('select * from modules where id=$1',[module_id]);
-           if(checkModule.rowCount===0){
-                   return res.status(404).json({message:"No module found"});
-           }
-            if(student_id){
-                  queries.push(`student_id=$`+(values.length+1));
-                  values.push(student_id);
-            }
+        // Check student
+        const checkStudent = await pool.query(
+            "SELECT * FROM student_profiles WHERE id = $1",
+            [student_id]
+        );
 
-            if(module_id){
-                  queries.push(`module_id=$`+(values.length+1));
-                  values.push(module_id);
-            }
-            values.push(id);
-            const result=await pool.query(`update enrollment set ${queries.join(', ')} where id=$${values.length} returning *`,values);
-            if(result.rowCount===0){
-                  return res.status(404).json({message:"No enrollment found"});
-            }
-            return res.status(200).json({
-                message:"Enrollment updated",
-                enrollment:result.rows[0]
-            })
+        if (checkStudent.rowCount === 0) {
+            return res.status(404).json({
+                message: "No student found"
+            });
+        }
 
-       }
-       catch(err){
-          console.log(err);
-          return res.status(500).json({message:"Internal server error"});
-       }
+        // Check module
+        const checkModule = await pool.query(
+            "SELECT * FROM modules WHERE id = $1",
+            [module_id]
+        );
+
+        if (checkModule.rowCount === 0) {
+            return res.status(404).json({
+                message: "No module found"
+            });
+        }
+
+        // Check duplicate enrollment
+        const checkEnrollment = await pool.query(
+            `
+            SELECT id
+            FROM enrollment
+            WHERE student_id = $1
+              AND module_id = $2
+              AND id != $3
+            `,
+            [student_id, module_id, id]
+        );
+
+        if (checkEnrollment.rowCount > 0) {
+            return res.status(409).json({
+                message: "This student is already enrolled in this module"
+            });
+        }
+
+        // Build update query
+        if (student_id) {
+            queries.push(`student_id=$${values.length + 1}`);
+            values.push(student_id);
+        }
+
+        if (module_id) {
+            queries.push(`module_id=$${values.length + 1}`);
+            values.push(module_id);
+        }
+
+        values.push(id);
+
+        const result = await pool.query(
+            `
+            UPDATE enrollment
+            SET ${queries.join(", ")}
+            WHERE id=$${values.length}
+            RETURNING *
+            `,
+            values
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                message: "No enrollment found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Enrollment updated",
+            enrollment: result.rows[0]
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
 }
 
 async function deleteEnrollment(req,res){
