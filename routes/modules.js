@@ -13,12 +13,14 @@ const {
      getModules,
      getOneModule,
      editModule,
-     deleteModule
+     deleteModule,
+     getMyModules
 
 }=require('../controllers/moduleController');
 
 router.post('/',authentificationSecurity,authorize(["Admin","Registrar"]),createModule);
 router.get('/',authentificationSecurity,authorize(["Admin","Registrar","Student","Teacher"]),getModules);
+router.get('/my-modules',authentificationSecurity,authorize(["Student"]),getMyModules);
 router.get('/:id',authentificationSecurity,authorize(["Admin","Registrar","Student","Teacher"]),getOneModule);
 router.put('/edit-module/:id',authentificationSecurity,authorize(["Admin","Registrar"]),editModule);
 router.delete('/delete-module/:id',authentificationSecurity,authorize(["Admin"]),deleteModule);

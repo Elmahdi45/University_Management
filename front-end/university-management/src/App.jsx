@@ -13,6 +13,13 @@ import Enrollments from "./pages/Admin/Enrollments";
 import Grades from "./pages/Admin/Grades";
 import TeachingAssignment from "./pages/Admin/TeachingAssignment";
 import CourseMaterials from "./pages/Admin/CourseMaterials";
+import Assignments from "./pages/Admin/Assignments";
+import DashboardS from "./pages/Student/DashboardS";
+import MyModules from "./pages/Student/MyModules";
+import MyGrades from "./pages/Student/MyGrades";
+import MyAttendance from "./pages/Student/MyAttendance";
+import MyCourseMaterials from "./pages/Student/MyCourseMaterials";
+import MyAssignments from "./pages/Student/MyAssignments";
 
 function App() {
     return (
@@ -35,9 +42,13 @@ function App() {
             <Route path="/grades" element={<Grades></Grades>}></Route>
             <Route path="/teachingassignments" element={<TeachingAssignment></TeachingAssignment>}></Route>
             <Route path="/coursematerials" element={<CourseMaterials></CourseMaterials>}></Route>
-
-
-
+            <Route path="/assignments" element={<Assignments></Assignments>}></Route>
+            <Route path="/student-dashboard" element={<DashboardS></DashboardS>}></Route>
+            <Route path="/my-modules" element={<MyModules></MyModules>}></Route>
+            <Route path="/my-grades" element={<MyGrades></MyGrades>}></Route>
+            <Route path="/my-attendance" element={<MyAttendance></MyAttendance>}></Route>
+            <Route path="/my-courseMaterials" element={<MyCourseMaterials></MyCourseMaterials>}></Route>
+            <Route path="/my-assignments" element={<MyAssignments></MyAssignments>}></Route>
             </Route>
 
         </Routes>

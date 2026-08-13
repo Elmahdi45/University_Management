@@ -28,8 +28,11 @@ const assignmentRouter=require('./routes/assignment');
 const courseMaterialRouter=require('./routes/courseMaterial');
 const submissionsRouter=require('./routes/submissions');
 const adminRouter=require('./routes/admins');
+const userProfileRouter=require('./routes/userProfile');
 app.use(express.json());
 
+
+app.use('/profile',userProfileRouter);
 app.use('/auth',authRouter);
 app.use('/registrar',registrarRouter);
 app.use('/students',studentRouter);

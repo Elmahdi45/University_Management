@@ -3,72 +3,99 @@ import {
   Bell,
   ChevronDown,
   Menu,
+  User,
+  LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-function Navbar() {
+const navbarConfig = {
+  Admin: {
+    title: "University Administration",
+    subtitle: "Manage the university system",
+  },
+
+  Registrar: {
+    title: "Registrar Office",
+    subtitle: "Manage students and academic records",
+  },
+
+  Teacher: {
+    title: "Teaching Portal",
+    subtitle: "Manage your classes and coursework",
+  },
+
+  Student: {
+    title: "Student Portal",
+    subtitle: "View your academic information",
+  },
+};
+
+
+function Navbar({ role, user }) {
+  const config = navbarConfig[role];
+    const navigate=useNavigate();
+
+  const handleLogout=()=>{
+       localStorage.removeItem("token");
+       navigate("/login");
+  }
+
+  if (!config) {
+    return null;
+  }
+
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
+    <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
 
-      {/* Left Side */}
-      <div className="flex items-center gap-5">
+      {/* Left side */}
+      <div>
+        <h1 className="text-xl font-semibold text-slate-800">
+          {config.title}
+        </h1>
 
-        {/* Mobile menu button (logic later) */}
-        <button className="lg:hidden">
-          <Menu size={22} />
-        </button>
-
-        {/* Search */}
-        <div className="relative">
-
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-
-          <input
-            type="text"
-            placeholder="Search students, teachers..."
-            className="w-80 border border-slate-300 rounded-lg py-2 pl-10 pr-4 outline-none focus:border-slate-900"
-          />
-
-        </div>
-
+        <p className="text-sm text-slate-500">
+          {config.subtitle}
+        </p>
       </div>
 
-      {/* Right Side */}
-      <div className="flex items-center gap-8">
 
-        {/* Date */}
-        <div>
-          <span className="text-slate-500 font-medium">
-            Sunday, August 2
-          </span>
-        </div>
+      {/* Right side */}
+      <div className="flex items-center gap-4">
 
-        {/* Notification */}
-        <button className="relative">
-
-          <Bell size={22} className="text-slate-600" />
-
-          {/* Red Dot */}
-          <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"></span>
-
+        {/* Search */}
+        <button className="p-2 rounded-lg hover:bg-slate-100 transition">
+          <Search size={20} />
         </button>
+
+        {/* Notifications */}
+        <button className="relative p-2 rounded-lg hover:bg-slate-100 transition">
+          <Bell size={20} />
+
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+        </button>
+
 
         {/* User */}
-        <button className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
 
-          <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-semibold">
-            LP
+          <div className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center">
+            <User size={18} />
           </div>
 
-          <span className="font-medium">
-            Lisa Park
-          </span>
+          <div className="hidden md:block">
+            <p className="text-sm font-medium text-slate-800">
+              {user.first_name} {user.last_name}
+            </p>
+            <p className="text-xs text-slate-500">
+              {role}
+            </p>
+          </div>
 
-          <ChevronDown size={18} className="text-slate-500" />
+          <button className="p-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition" onClick={handleLogout}>
+            <LogOut size={18} />
+          </button>
 
-        </button>
+        </div>
 
       </div>
 

@@ -10,6 +10,7 @@ import { useState,useEffect } from "react";
 import api from "../../api/axios";
 import {Link } from "react-router-dom";
 function Dashboard() {
+ const [classes,setClasses]=useState([]);
  const [user, setUser] = useState([]);
  const [students,setStudents]=useState([]);
  const [student,setStudent]=useState({
@@ -46,6 +47,7 @@ function Dashboard() {
        coefficient:0,
        semester:""
  })
+ const [assignments,setAssignments]=useState([]);
  const [departments,setDepartments]=useState([]);
  const [department,setDepartment]=useState({
       name:""
@@ -69,6 +71,34 @@ const setFormData =
         : modal === "department"
         ? setDepartment
         : setModule;
+
+
+
+    async function loadModules(){
+          try{
+               const response=await api.get('/module');
+               setModules(response.data);
+          }
+          catch(err){
+             console.log(err);
+          }
+    }
+    useEffect(()=>{
+         loadModules();
+    },[])
+
+       async function loadClasses(){
+          try{
+             const response=await api.get('/class');
+             setClasses(response.data);
+          }
+          catch(err){
+             console.log(err);
+          }
+    }
+    useEffect(()=>{
+          loadClasses();
+    },[])
 
 
  async function loadEnrollments(){
@@ -232,6 +262,18 @@ const handleAddModule=async(e)=>{
              console.log(err);
          }
 }
+    async function loadAssignments(){
+          try{
+              const response=await api.get('/assignment');
+              setAssignments(response.data.assignments);
+          }
+          catch(err){
+              console.log(err);
+          }
+    }
+    useEffect(()=>{
+         loadAssignments();
+    },[])
 
 
 const handleClick = (action) => {
@@ -371,21 +413,21 @@ const recentSubmissions = [
     },
     {
       title: "Total Classes",
-      value: 86,
+      value: classes.length,
       icon: BookOpen,
       bg: "bg-orange-100",
       color: "text-orange-600",
     },
     {
       title: "Total Modules",
-      value: 134,
+      value: modules.length,
       icon: ClipboardList,
       bg: "bg-cyan-100",
       color: "text-cyan-600",
     },
     {
       title: "Active Assignments",
-      value: 39,
+      value: assignments.length,
       icon: FileText,
       bg: "bg-pink-100",
       color: "text-pink-600",
