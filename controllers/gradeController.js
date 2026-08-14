@@ -3,7 +3,7 @@ const {pool}=require('../database/db');
 async function createGrades(req, res) {
     try {
         const user_id = req.user.id;
-        const user_role = req.user.role;
+        const role = req.user.role;
 
         const { student_id, module_id, grade } = req.body;
 
@@ -12,95 +12,75 @@ async function createGrades(req, res) {
                 message: "All fields are required"
             });
         }
-        const checkEnrollment = await pool.query(
-            `
+
+        const enrollment = await pool.query(`
             SELECT 1
-            FROM enrollments
+            FROM enrollment
             WHERE student_id = $1
             AND module_id = $2
-            `,
-            [student_id, module_id]
-        );
+        `, [student_id, module_id]);
 
-        if (checkEnrollment.rowCount === 0) {
+        if (enrollment.rowCount === 0) {
             return res.status(404).json({
                 message: "Student is not enrolled in this module"
             });
         }
 
         let teacher_id = null;
-        if (user_role === "Teacher") {
 
-            const teacherProfile = await pool.query(
-                `
-                SELECT id
-                FROM teacher_profiles
-                WHERE user_id = $1
-                `,
-                [user_id]
-            );
+        // If teacher, check that he teaches this student's class + module
+        if (role === "Teacher") {
 
-            if (teacherProfile.rowCount === 0) {
-                return res.status(404).json({
-                    message: "Teacher profile not found"
-                });
-            }
-
-            teacher_id = teacherProfile.rows[0].id;
-
-            const checkTeachingAssignment = await pool.query(
-                `
-                SELECT 1
-                FROM teaching_assignments ta
+            const teacher = await pool.query(`
+                SELECT tp.id
+                FROM teacher_profiles tp
+                JOIN teaching_assignments ta
+                    ON ta.teacher_id = tp.id
                 JOIN student_profiles sp
-                    ON ta.class_id = sp.class_id
-                WHERE ta.teacher_id = $1
+                    ON sp.class_id = ta.class_id
+                WHERE tp.user_id = $1
                 AND sp.id = $2
                 AND ta.module_id = $3
-                `,
-                [teacher_id, student_id, module_id]
-            );
+            `, [user_id, student_id, module_id]);
 
-            if (checkTeachingAssignment.rowCount === 0) {
+            if (teacher.rowCount === 0) {
                 return res.status(403).json({
                     message: "You are not assigned to teach this student in this module"
                 });
             }
+
+            teacher_id = teacher.rows[0].id;
         }
 
-        const checkDuplicate = await pool.query(
-            `
+        // Check duplicate
+        const duplicate = await pool.query(`
             SELECT 1
             FROM grades
             WHERE student_id = $1
             AND module_id = $2
-            `,
-            [student_id, module_id]
-        );
+        `, [student_id, module_id]);
 
-        if (checkDuplicate.rowCount > 0) {
+        if (duplicate.rowCount > 0) {
             return res.status(409).json({
                 message: "Grade for this module already exists"
             });
         }
 
-        const insert = await pool.query(
-            `
+        const result = await pool.query(`
             INSERT INTO grades
             (student_id, module_id, teacher_id, grade)
             VALUES ($1, $2, $3, $4)
             RETURNING *
-            `,
-            [student_id, module_id, teacher_id, grade]
-        );
+        `, [student_id, module_id, teacher_id, grade]);
 
         return res.status(201).json({
             message: "Grade created successfully",
-            grade: insert.rows[0]
+            grade: result.rows[0]
         });
 
     } catch (err) {
         console.log(err);
+
         return res.status(500).json({
             message: "Internal server error"
         });
@@ -202,119 +182,192 @@ async function getMyStudentsGrades(req, res) {
     try {
         const user_id = req.user.id;
 
-        const result = await pool.query(
-            `
+        const result = await pool.query(`
             SELECT
-                g.id AS grade_id,
-                g.grade,
+                sp.id AS student_id,
+
+                u.first_name AS student_first_name,
+                u.last_name AS student_last_name,
+
                 m.id AS module_id,
                 m.name AS module_name,
                 m.semester,
+
                 c.id AS class_id,
                 c.name AS class_name,
-                u.first_name AS student_first_name,
-                u.last_name AS student_last_name
+
+                g.id AS grade_id,
+                g.grade
+
             FROM teaching_assignments ta
+
             JOIN teacher_profiles tp
                 ON ta.teacher_id = tp.id
-            JOIN grades g
-                ON g.teacher_id = tp.id
-                AND g.module_id = ta.module_id
-            JOIN student_profiles sp
-                ON g.student_id = sp.id
-                AND sp.class_id = ta.class_id
-            JOIN users u
-                ON sp.user_id = u.id
-            JOIN modules m
-                ON ta.module_id = m.id
+
             JOIN classes c
                 ON ta.class_id = c.id
+
+            JOIN student_profiles sp
+                ON sp.class_id = c.id
+
+            JOIN users u
+                ON sp.user_id = u.id
+
+            JOIN modules m
+                ON ta.module_id = m.id
+
+            LEFT JOIN grades g
+                ON g.student_id = sp.id
+                AND g.module_id = ta.module_id
+
             WHERE tp.user_id = $1
+
             ORDER BY
                 c.name,
                 m.name,
                 u.last_name,
                 u.first_name
-            `,
-            [user_id]
-        );
+        `, [user_id]);
 
         if (result.rowCount === 0) {
             return res.status(404).json({
-                message: "No grades found"
+                message: "No students found"
             });
         }
 
         return res.status(200).json({
-            message: "Grades retrieved successfully",
+            message: "Students grades retrieved successfully",
             grades: result.rows
         });
 
     } catch (err) {
         console.log(err);
+
         return res.status(500).json({
             message: "Internal server error"
         });
     }
 }
-async function getOneStudentGrades(req,res){
-     try{
-          const user_id=req.user.id;
-          const role=req.user.role;
-          const id=Number(req.params.id);
-          if(isNaN(id)){
-              return res.status(400).json({message:"Invalid student id"});
-          }
+async function getOneStudentGrades(req, res) {
+    try {
+        const user_id = req.user.id;
+        const role = req.user.role;
+        const student_id = Number(req.params.id);
 
-          let checkTeacher;
-
-          if(role==="Admin"){
-               checkTeacher=await pool.query(`select g.grade as student_grade,m.name as module_name
-               ,u.first_name as student_first_name,u.last_name as student_last_name
-                from grades g join modules m on g.module_id=m.id
-                JOIN student_profiles sp on g.student_id=sp.id
-                JOIN users u on sp.user_id=u.id 
-                where g.student_id=$1`,[id]);
-               if(checkTeacher.rowCount===0){
-                    return res.status(404).json({message:"No student found"});
-               }
-          }
-         
-          else if(role==="Teacher"){
-             checkTeacher=await pool.query(`
-                 select ta.class_id,m.name as module_name,c.name as class_name,u.first_name 
-                 as student_first_name,u.last_name as student_last_name , g.grade as student_grade,g.id AS grade_id,
-                    m.id AS module_id,
-                    m.semester,
-                    c.id AS class_id,
-                  from teaching_assignments ta 
-                  JOIN modules m on ta.module_id=m.id
-                  JOIN classes c on c.id=ta.class_id
-                  JOIN student_profiles sp on c.id=sp.class_id
-                  JOIN users u on sp.user_id=u.id
-                  JOIN teacher_profiles tp on ta.teacher_id=tp.id
-                  JOIN grades g on g.student_id=sp.id and g.module_id=ta.module_id
-                  WHERE tp.user_id=$1 and sp.id=$2
-                  
-         
-         
-            `,[user_id,id]);
-            if(checkTeacher.rowCount===0){
-                 return res.status(403).json({message:"You are not assigned to this student's class or module"});
-            }
-
+        if (isNaN(student_id)) {
+            return res.status(400).json({
+                message: "Invalid student id"
+            });
         }
-        return res.status(200).json({message:"Student grades received",grades:checkTeacher.rows});
 
+        let result;
+
+        if (role === "Admin") {
+
+            result = await pool.query(`
+                SELECT
+                    g.id AS grade_id,
+                    g.grade,
+                    m.id AS module_id,
+                    m.name AS module_name,
+                    m.semester,
+
+                    sp.id AS student_id,
+                    u.first_name AS student_first_name,
+                    u.last_name AS student_last_name,
+
+                    c.id AS class_id,
+                    c.name AS class_name
+
+                FROM grades g
+
+                JOIN modules m
+                    ON g.module_id = m.id
+
+                JOIN student_profiles sp
+                    ON g.student_id = sp.id
+
+                JOIN users u
+                    ON sp.user_id = u.id
+
+                JOIN classes c
+                    ON sp.class_id = c.id
+
+                WHERE g.student_id = $1
+
+                ORDER BY m.name
+            `, [student_id]);
+
+        } else if (role === "Teacher") {
+
+            result = await pool.query(`
+                SELECT
+                    g.id AS grade_id,
+                    g.grade,
+
+                    m.id AS module_id,
+                    m.name AS module_name,
+                    m.semester,
+
+                    sp.id AS student_id,
+                    u.first_name AS student_first_name,
+                    u.last_name AS student_last_name,
+
+                    c.id AS class_id,
+                    c.name AS class_name
+
+                FROM teaching_assignments ta
+
+                JOIN teacher_profiles tp
+                    ON ta.teacher_id = tp.id
+
+                JOIN student_profiles sp
+                    ON sp.class_id = ta.class_id
+
+                JOIN grades g
+                    ON g.student_id = sp.id
+                    AND g.module_id = ta.module_id
+
+                JOIN modules m
+                    ON g.module_id = m.id
+
+                JOIN classes c
+                    ON sp.class_id = c.id
+
+                JOIN users u
+                    ON sp.user_id = u.id
+
+                WHERE tp.user_id = $1
+                AND sp.id = $2
+
+                ORDER BY m.name
+            `, [user_id, student_id]);
+
+        } else {
+            return res.status(403).json({
+                message: "Forbidden"
+            });
+        }
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                message: "No grades found for this student"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Student grades retrieved",
+            grades: result.rows
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
     }
-     
-    
-     catch(err){
-         console.log(err);
-         return res.status(500).json({message:"Internal server error"});
-     }
 }
-
 async function editStudentGrades(req, res) {
     try {
         const role = req.user.role;

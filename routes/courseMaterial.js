@@ -21,7 +21,7 @@ router.post('/',authentificationSecurity,authorize(["Admin","Teacher"]),createCo
 router.get('/',authentificationSecurity,authorize(["Admin","Teacher"]),getCourseMaterial);
 router.get('/me',authentificationSecurity,authorize(["Student"]),getMyCourseMaterials);
 router.get('/:id',authentificationSecurity,authorize(["Admin","Teacher","Student"]),getOneCourseMaterial);
-router.put('/edit-course-materials',authentificationSecurity,authorize(["Admin","Teacher"]),editCourseMaterial);
-router.delete('/delete-course-materials',authentificationSecurity,authorize(["Admin","Teacher"]),deleteCourseMaterial);
+router.put('/edit-course-materials/:id',authentificationSecurity,authorize(["Admin","Teacher"]),editCourseMaterial);
+router.delete('/delete-course-materials/:id',authentificationSecurity,authorize(["Admin","Teacher"]),deleteCourseMaterial);
 
 module.exports=router;

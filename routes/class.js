@@ -12,12 +12,14 @@ const {
       getClasses,
       getOneClass,
       editClass,
-      deleteClass
+      deleteClass,
+      getMyClasses
 }=require('../controllers/classController');
 
 
 router.post('/',authentificationSecurity,authorize(["Admin","Registrar"]),createClass);
 router.get('/',authentificationSecurity,authorize(["Admin","Registrar","Student","Teacher"]),getClasses);
+router.get('/my-classes',authentificationSecurity,authorize(["Teacher"]),getMyClasses)
 router.get('/:id',authentificationSecurity,authorize(["Admin","Registrar","Student","Teacher"]),getOneClass);
 router.put('/edit-class/:id',authentificationSecurity,authorize(["Admin","Registrar"]),editClass);
 router.delete('/delete-class/:id',authentificationSecurity,authorize(["Admin","Registrar"]),deleteClass);

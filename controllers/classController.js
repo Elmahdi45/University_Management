@@ -46,6 +46,60 @@ async function getClasses(req,res){
           return res.status(500).json({message:"Internal server error"});
       }
 }
+async function getMyClasses(req, res) {
+    try {
+        const user_id = req.user.id;
+
+        const result = await pool.query(`
+            SELECT DISTINCT
+                c.id,
+                c.name,
+                d.name AS department_name,
+                COUNT(DISTINCT sp.id) AS student_count
+
+            FROM teacher_profiles tp
+
+            JOIN teaching_assignments ta
+                ON ta.teacher_id = tp.id
+
+            JOIN classes c
+                ON ta.class_id = c.id
+
+            LEFT JOIN departments d
+                ON c.department_id = d.id
+
+            LEFT JOIN student_profiles sp
+                ON sp.class_id = c.id
+
+            WHERE tp.user_id = $1
+
+            GROUP BY
+                c.id,
+                c.name,
+                d.name
+
+            ORDER BY c.name
+        `, [user_id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                message: "No classes found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Classes retrieved",
+            classes: result.rows
+        });
+
+    } catch (err) {
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
 async function getOneClass(req,res){
       try{
          const id=Number(req.params.id);
@@ -198,5 +252,6 @@ module.exports={
      getClasses,
      getOneClass,
      editClass,
-     deleteClass
+     deleteClass,
+     getMyClasses
 }

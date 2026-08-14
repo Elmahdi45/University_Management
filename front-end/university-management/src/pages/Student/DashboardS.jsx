@@ -1,87 +1,122 @@
 import { BookA, BookCopyIcon, User2,BookOpen,GraduationCap,ClipboardList,CalendarCheck, Heading1} from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState,useEffect } from "react";
+import api from "../../api/axios";
 function DashboardS(){
+
+    const [search,setSearch]=useState("");
+    const [myGrades,setMyGrades]=useState([]);
+    const [myModules,setModules]=useState([]);
+    const [myAssignments,setMyAssignments]=useState([]);
+      async function loadMyAssignments() {
+        try {
+            const response = await api.get("/assignment/me");
+
+            const data = Array.isArray(response.data.assignments)
+                ? response.data.assignments
+                : [];
+
+            const formattedAssignments = data.map((assignment) => ({
+                ...assignment,
+                teacher_name: [
+                    assignment.teacher_first_name,
+                    assignment.teacher_last_name,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+                deadline: assignment.deadline
+                    ? new Date(assignment.deadline).toLocaleString()
+                    : "—",
+            }));
+
+            setAssignments(formattedAssignments);
+            setError("");
+        } catch (err) {
+            console.log(err);
+
+            setAssignments([]);
+            setError(
+                err.response?.data?.message ||
+                    "Unable to load assignments."
+            );
+        }
+    }
+
+    useEffect(() => {
+        loadMyAssignments();
+    }, []);
+
+    async function loadMyGrades(){
+         try{
+             const response=await api.get('/grades/me');
+             setMyGrades(response.data.grades);
+         }
+         catch(err){
+                console.log(err);
+
+                alert(
+                    err.response?.data?.message || "Something went wrong"
+                );   
+         }
+    }
+    useEffect(()=>{
+         loadMyGrades();
+    },[]);
+
+     async function loadMyModules(){
+          try{
+                 const response=await api.get('/module/my-modules');
+                 setModules(response.data.modules); 
+          }
+          catch(err){
+              console.log(err);
+             
+          }
+    }
+    useEffect(()=>{
+         loadMyModules();
+    },[])
+
+
 
 const stats = [
   {
     title: "Enrolled Modules",
-    value: 4,
+    value: myModules.length,
     icon: BookOpen,
     bg: "bg-blue-100",
     color: "text-blue-600",
   },
-
-  {
-    title: "Current Average",
-    value: "14.8",
-    icon: GraduationCap,
-    bg: "bg-emerald-100",
-    color: "text-emerald-600",
-  },
-
   {
     title: "Pending Assignments",
-    value: 3,
+    value: myAssignments.length,
     icon: ClipboardList,
     bg: "bg-orange-100",
     color: "text-orange-600",
   },
 
-  {
-    title: "Attendance Rate",
-    value: "92%",
-    icon: CalendarCheck,
-    bg: "bg-purple-100",
-    color: "text-purple-600",
-  },
+  
 ];
 
-const recentGrades = [
-  {
-    module: "Web Development",
-    grade: 16,
-  },
-  {
-    module: "Database Systems",
-    grade: 14,
-  },
-  {
-    module: "Computer Networks",
-    grade: 13,
-  },
-  {
-    module: "Algorithms",
-    grade: 15,
-  },
-];
+const recentGrades = myGrades.slice(0, 4).map((g) => ({
+    module: g.module_name,
+    grade: g.grade,
+}));
 
-const myModules = [
-  { name: "Web Development" ,id:1 },
-  { name: "Database Systems",id:2 },
-  { name: "Computer Networks",id:3 },
-  { name: "Algorithms & Data Structures" ,id:4 },
-];
+const recentModules = myModules.slice(0,4).map((m)=>({
+      module:m.name,
+      id:m.id
+      
+}))
 
-const upcomingDeadlines = [
-  {
-    id: 1,
-    title: "React Assignment",
-    module: "Web Development",
-    deadline: "2026-08-18T23:59:00"
-  },
-  {
-    id: 2,
-    title: "Database Project",
-    module: "Database Systems",
-    deadline: "2026-08-22T23:59:00"
-  },
-  {
-    id: 3,
-    title: "Network Report",
-    module: "Computer Networks",
-    deadline: "2026-08-27T23:59:00"
-  }
-];
+const upcomingDeadlines = myAssignments
+    .filter((assignment) => new Date(assignment.deadline) > new Date())
+    .sort(
+        (a, b) =>
+            new Date(a.deadline) - new Date(b.deadline)
+    )
+    .slice(0, 3);
+
      return (
          <div className="p-8 space-y-8"> 
              <div> 
@@ -221,42 +256,41 @@ const upcomingDeadlines = [
 
   </div>
 
+<div className="mt-6 space-y-4">
+    {upcomingDeadlines.length > 0 ? (
+        upcomingDeadlines.map((assignment) => (
+            <div
+                key={assignment.id}
+                className="flex items-center justify-between border-b border-slate-100 pb-4 last:border-none"
+            >
+                <div>
+                    <p className="font-medium text-slate-800">
+                        {assignment.title}
+                    </p>
 
-  <div className="mt-6 space-y-4">
+                    <p className="text-sm text-slate-400">
+                        {assignment.module_name}
+                    </p>
+                </div>
 
-    {upcomingDeadlines.map((assignment) => (
+                <div className="text-right">
+                    <p className="font-semibold text-orange-600">
+                        {new Date(
+                            assignment.deadline
+                        ).toLocaleDateString()}
+                    </p>
 
-      <div
-        key={assignment.id}
-        className="flex items-center justify-between border-b border-slate-100 pb-4 last:border-none"
-      >
-
-        <div>
-          <p className="font-medium text-slate-800">
-            {assignment.title}
-          </p>
-
-          <p className="text-sm text-slate-400">
-            {assignment.module}
-          </p>
-        </div>
-
-
-        <div className="text-right">
-
-          <p className="font-semibold text-orange-600">
-            {new Date(assignment.deadline).toLocaleDateString()}
-          </p>
-
-          <p className="text-sm text-slate-400">
-            Deadline
-          </p>
-
-        </div>
-
-      </div>
-
-    ))}
+                    <p className="text-sm text-slate-400">
+                        Deadline
+                    </p>
+                </div>
+            </div>
+        ))
+    ) : (
+        <p className="text-slate-500">
+            No upcoming deadlines
+        </p>
+    )}
 </div>
 </div>
 

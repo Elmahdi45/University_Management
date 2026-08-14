@@ -12,11 +12,12 @@ import {
   FileText,
   Settings,
   LogOut,
+  UserCircle,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 const sidebarConfig = {
   Admin: {
     title: "Admin",
@@ -177,7 +178,7 @@ const sidebarConfig = {
           },
           {
             label: "Teaching Assignments",
-            path: "/teachingassignments",
+            path: "/my-teachingAssignments",
             icon: Briefcase,
           },
         ],
@@ -188,24 +189,20 @@ const sidebarConfig = {
         links: [
           {
             label: "Course Materials",
-            path: "/coursematerials",
+            path: "/my-courseMaterialsT ",
             icon: FileText,
           },
           {
             label: "Assignments",
-            path: "/assignments",
+            path: "/my-assignmentsT",
             icon: ClipboardList,
           },
           {
             label: "Grades",
-            path: "/grades",
+            path: "/my-gradesT",
             icon: Award,
           },
-          {
-            label: "Attendance",
-            path: "/attendance",
-            icon: ClipboardList,
-          },
+          
         ],
       },
     ],
@@ -240,6 +237,12 @@ const sidebarConfig = {
             path: "/my-attendance",
             icon: ClipboardList,
           },
+
+          {
+            label:"Profile",
+            path:"/student-profile",
+            icon:UserCircle
+          }
         ],
       },
 
@@ -369,10 +372,7 @@ function Sidebar({ role }) {
 
         <div className="space-y-2">
 
-          <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-slate-800 transition">
-            <Settings size={20} />
-            Settings
-          </button>
+          
 
           <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-red-900 transition" onClick={handleLogout}>
             <LogOut size={20} />
