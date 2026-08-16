@@ -31,6 +31,7 @@ import MyModulesT from "./pages/Teacher/MyModulesT";
 import TeacherProfile from "./pages/Teacher/TeacherProfile";
 import MyStudentsT from "./pages/Teacher/MyStudentsT";
 import MyTeachingAssignmentsT from "./pages/Teacher/MyTeachingAssignmentsT";
+import SAssignment from "./pages/Student/SAssignment";
 
 function App() {
     return (
@@ -68,6 +69,8 @@ function App() {
              <Route path="/my-courseMaterialsT" element={<CourseMaterialsT></CourseMaterialsT>}></Route>
              <Route path="/my-assignmentsT" element={<AssignmentsT> </AssignmentsT>}></Route>
              <Route path="/my-gradesT" element={<GradesT></GradesT>}></Route>
+             <Route path="/teacher-profile" element={<TeacherProfile></TeacherProfile>}></Route>
+             <Route path="/my-assignment/:id" element={<SAssignment></SAssignment>}></Route>
             </Route>
 
         </Routes>

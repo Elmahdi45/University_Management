@@ -1,14 +1,27 @@
-function DataTable({ columns, data, onEdit, onDelete }) {
+function DataTable({
+    columns = [],
+    data = [],
+    onEdit,
+    onDelete,
+}) {
     const hasActions = onEdit || onDelete;
+
+    const getCellValue = (row, accessor) => {
+        if (typeof accessor === "function") {
+            return accessor(row);
+        }
+
+        return row[accessor] ?? "-";
+    };
 
     return (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
             <table className="w-full text-left">
                 <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                        {columns.map((column) => (
+                        {columns.map((column, index) => (
                             <th
-                                key={column.accessor}
+                                key={`${column.header}-${index}`}
                                 className="px-6 py-4 text-sm font-semibold text-slate-700 whitespace-nowrap"
                             >
                                 {column.header}
@@ -30,12 +43,12 @@ function DataTable({ columns, data, onEdit, onDelete }) {
                                 key={row.id ?? index}
                                 className="hover:bg-slate-50 transition-colors"
                             >
-                                {columns.map((column) => (
+                                {columns.map((column, columnIndex) => (
                                     <td
-                                        key={column.accessor}
+                                        key={`${column.header}-${columnIndex}`}
                                         className="px-6 py-4 text-sm text-slate-600 whitespace-nowrap"
                                     >
-                                        {row[column.accessor]}
+                                        {getCellValue(row, column.accessor)}
                                     </td>
                                 ))}
 
@@ -44,8 +57,9 @@ function DataTable({ columns, data, onEdit, onDelete }) {
                                         <div className="flex items-center gap-3">
                                             {onEdit && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => onEdit(row)}
-                                                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                                                    className="font-medium text-indigo-600 hover:text-indigo-800"
                                                 >
                                                     Edit
                                                 </button>
@@ -53,8 +67,9 @@ function DataTable({ columns, data, onEdit, onDelete }) {
 
                                             {onDelete && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => onDelete(row)}
-                                                    className="text-red-600 hover:text-red-800 font-medium"
+                                                    className="font-medium text-red-600 hover:text-red-800"
                                                 >
                                                     Delete
                                                 </button>

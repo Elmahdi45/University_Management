@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-
+import { Link } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import TableHeader from "../../components/TableHeader";
 import DataTable from "../../components/DataTable";
-
 function MyAssignments() {
     const columns = [
         { header: "Title", accessor: "title" },
@@ -13,6 +12,18 @@ function MyAssignments() {
         { header: "Class", accessor: "class_name" },
         { header: "Teacher", accessor: "teacher_name" },
         { header: "Deadline", accessor: "deadline" },
+        {
+    header: "View",
+    accessor: (assignment) => (
+        <Link
+            to={`/my-assignment/${assignment.id}`}
+            className="font-medium text-indigo-600 hover:text-indigo-800"
+        >
+            View
+        </Link>
+    ),
+},
+       
     ];
 
     const [assignments, setAssignments] = useState([]);
@@ -61,6 +72,12 @@ function MyAssignments() {
         setSearch(e.target.value);
     };
 
+    const deleteIt=()=>{
+
+    }
+    const editIt=()=>{
+         
+    }
     const filteredAssignments = assignments.filter((assignment) => {
         const query = search.toLowerCase();
 
@@ -107,6 +124,7 @@ function MyAssignments() {
             <DataTable
                 columns={columns}
                 data={filteredAssignments}
+               
             />
         </div>
     );

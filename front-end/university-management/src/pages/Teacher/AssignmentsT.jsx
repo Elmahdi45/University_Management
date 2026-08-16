@@ -25,10 +25,7 @@ function AssignmentsT() {
         deadline: ""
     });
 
-    // -----------------------------
-    // LOAD ASSIGNMENTS
-    // -----------------------------
-
+   
     const loadAssignments = async () => {
         try {
 

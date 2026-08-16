@@ -47,7 +47,7 @@ async function getProfile(req, res) {
           u.phone,
           u.gender,
           r.name AS role,
-
+          d.name as department_name,
           tp.id AS teacher_profile_id
 
         FROM users u
@@ -57,6 +57,8 @@ async function getProfile(req, res) {
 
         JOIN teacher_profiles tp
           ON tp.user_id = u.id
+        JOIN departments d 
+          ON tp.department_id=d.id
 
         WHERE u.id = $1
       `, [user_id]);

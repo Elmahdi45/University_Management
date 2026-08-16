@@ -9,7 +9,7 @@ function TeacherProfile() {
   async function loadProfile() {
     try {
 
-      const response = await api.get("/users/profile");
+      const response = await api.get("/profile");
 
       setUser(response.data.user);
 

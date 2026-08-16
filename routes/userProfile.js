@@ -6,11 +6,12 @@ const {
 }=require('../middlwares/protectedAuth')
 const authorize=require('../middlwares/Authorize');
 const {
-      getProfile
+     getProfile,
+     updatePassword
 }=require("../controllers/userController")
 
 router.get('/',authentificationSecurity,getProfile);
-router.put('/update-profile',authentificationSecurity,authorize(["Admin","Registrar","Teacher","Student"]));
+router.put('/updateProfile',authentificationSecurity,authorize(["Admin","Registrar","Teacher","Student"]),updatePassword);
 
 module.exports=router;
 

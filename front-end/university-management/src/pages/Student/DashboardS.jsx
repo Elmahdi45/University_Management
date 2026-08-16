@@ -9,39 +9,26 @@ function DashboardS(){
     const [myModules,setModules]=useState([]);
     const [myAssignments,setMyAssignments]=useState([]);
       async function loadMyAssignments() {
-        try {
-            const response = await api.get("/assignment/me");
+    try {
+        const response = await api.get("/assignment/me");
 
-            const data = Array.isArray(response.data.assignments)
-                ? response.data.assignments
-                : [];
+        setMyAssignments(response.data.assignments || []);
+    } catch (err) {
+        console.log(err.response || err);
 
-            const formattedAssignments = data.map((assignment) => ({
-                ...assignment,
-                teacher_name: [
-                    assignment.teacher_first_name,
-                    assignment.teacher_last_name,
-                ]
-                    .filter(Boolean)
-                    .join(" "),
-                deadline: assignment.deadline
-                    ? new Date(assignment.deadline).toLocaleString()
-                    : "—",
-            }));
-
-            setAssignments(formattedAssignments);
-            setError("");
-        } catch (err) {
-            console.log(err);
-
-            setAssignments([]);
-            setError(
-                err.response?.data?.message ||
-                    "Unable to load assignments."
-            );
+        if (err.response?.status === 404) {
+            setMyAssignments([]);
+            return;
         }
-    }
 
+        alert(
+            err.response?.data?.message ||
+            "Unable to load assignments."
+        );
+
+        setMyAssignments([]);
+    }
+}
     useEffect(() => {
         loadMyAssignments();
     }, []);
@@ -110,13 +97,19 @@ const recentModules = myModules.slice(0,4).map((m)=>({
 }))
 
 const upcomingDeadlines = myAssignments
-    .filter((assignment) => new Date(assignment.deadline) > new Date())
+    .filter((assignment) => {
+        if (!assignment.deadline) return false;
+
+        const deadline = new Date(assignment.deadline);
+
+        return !Number.isNaN(deadline.getTime()) && deadline > new Date();
+    })
     .sort(
         (a, b) =>
             new Date(a.deadline) - new Date(b.deadline)
     )
     .slice(0, 3);
-
+    
      return (
          <div className="p-8 space-y-8"> 
              <div> 

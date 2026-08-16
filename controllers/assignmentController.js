@@ -21,7 +21,6 @@ async function createAssignment(req, res) {
             });
         }
 
-        // Get teacher profile + verify that he teaches this module
         const checkTeacher = await pool.query(`
             SELECT tp.id AS teacher_id
             FROM teaching_assignments ta
@@ -37,8 +36,6 @@ async function createAssignment(req, res) {
             });
         }
 
-        // IMPORTANT:
-        // teacher_id = teacher_profiles.id
         const teacher_id = checkTeacher.rows[0].teacher_id;
 
         const insert = await pool.query(`
@@ -70,9 +67,6 @@ async function createAssignment(req, res) {
 }
 
 
-// =========================
-// GET ASSIGNMENTS
-// =========================
 async function getAssignment(req, res) {
     try {
         const role = req.user.role;
@@ -170,9 +164,7 @@ async function getAssignment(req, res) {
 }
 
 
-// =========================
-// STUDENT ASSIGNMENTS
-// =========================
+
 async function getMyAssignments(req, res) {
     try {
         const user_id = req.user.id;
@@ -240,9 +232,7 @@ async function getMyAssignments(req, res) {
 }
 
 
-// =========================
-// GET ONE ASSIGNMENT
-// =========================
+
 async function getOneAssignment(req, res) {
     try {
         const user_id = req.user.id;

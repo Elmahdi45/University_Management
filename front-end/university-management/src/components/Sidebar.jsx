@@ -202,7 +202,11 @@ const sidebarConfig = {
             path: "/my-gradesT",
             icon: Award,
           },
-          
+          {
+            label:"Profile",
+            path:"/teacher-profile",
+            icon:UserCircle
+          }
         ],
       },
     ],

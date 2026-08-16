@@ -1,426 +1,284 @@
+import { useEffect, useMemo, useState } from "react";
 import {
-  User,
-  Key,
-  X,
+    BookOpen,
+    CalendarDays,
+    ClipboardList,
+    FileText,
+    GraduationCap,
+    Users,
 } from "lucide-react";
-import { useState } from "react";
 import api from "../../api/axios";
 
-function Profile({ role, user }) {
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  if (!user) {
-    return <div>Loading profile...</div>;
-  }
-
-  const handleUpdate = () => {
-    setIsOpen(true);
-  };
-
-  const handleChange = (e) => {
-    setPasswordData({
-      ...passwordData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmitPassword = async (e) => {
-    e.preventDefault();
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New passwords do not match");
-      return;
-    }
-
-    if (passwordData.currentPassword === passwordData.newPassword) {
-      alert("New password must be different from your current password");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      await api.put("/auth/update-password", {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      });
-
-      alert("Password updated successfully");
-
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-
-      setIsOpen(false);
-
-    } catch (err) {
-      alert(
-        err.response?.data?.message ||
-        "Unable to update password"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="p-8 bg-slate-100 min-h-full">
-
-      <div className="max-w-5xl mx-auto space-y-6">
-
-        {/* Header */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-
-          <div className="h-28 bg-indigo-400 from-indigo-600 to-purple-600" />
-
-          <div className="p-6 -mt-12">
-
-            <div className="flex items-end gap-4">
-
-              <div className="w-24 h-24 rounded-full bg-white p-1 shadow-lg">
-
-                <div className="w-full h-full rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-
-                  {user.profile_picture ? (
-                    <img
-                      src={`http://localhost:3000/uploads/${user.profile_picture}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User
-                      size={40}
-                      className="text-indigo-600"
-                    />
-                  )}
-
-                </div>
-
-              </div>
-
-              <div className="pb-1">
-
-                <h1 className="text-2xl font-bold">
-                  {user.first_name} {user.last_name}
-                </h1>
-
-                <p className="text-slate-500">
-                  {user.email}
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* Personal Information */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-
-          <h2 className="text-xl font-bold mb-6">
-            Personal Information
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6">
-
-            <div>
-              <p className="text-sm text-slate-400">
-                First Name
-              </p>
-
-              <p className="font-semibold">
-                {user.first_name}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-slate-400">
-                Last Name
-              </p>
-
-              <p className="font-semibold">
-                {user.last_name}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-slate-400">
-                Email
-              </p>
-
-              <p className="font-semibold">
-                {user.email}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm text-slate-400">
-                Phone
-              </p>
-
-              <p className="font-semibold">
-                {user.phone || "Not provided"}
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* Role Information */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-
-          <h2 className="text-xl font-bold mb-6">
-            {role} Information
-          </h2>
-
-          {role === "Student" && (
-            <div className="grid md:grid-cols-2 gap-4">
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Student ID
-                </p>
-
-                <p className="font-semibold">
-                  {user.id || "Not available"}
-                </p>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Class
-                </p>
-
-                <p className="font-semibold">
-                  {user.class_name || "Not assigned"}
-                </p>
-              </div>
-
-            </div>
-          )}
-
-          {role === "Teacher" && (
-            <div className="grid md:grid-cols-3 gap-4">
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Teacher ID
-                </p>
-
-                <p className="font-semibold">
-                  {user.teacher_id || "Not available"}
-                </p>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Department
-                </p>
-
-                <p className="font-semibold">
-                  {user.department_name || "Not assigned"}
-                </p>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Specialization
-                </p>
-
-                <p className="font-semibold">
-                  {user.specialization || "Not specified"}
-                </p>
-              </div>
-
-            </div>
-          )}
-
-          {role === "Registrar" && (
-            <div className="grid md:grid-cols-2 gap-4">
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Registrar ID
-                </p>
-
-                <p className="font-semibold">
-                  {user.registrar_id || "Not available"}
-                </p>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Department
-                </p>
-
-                <p className="font-semibold">
-                  {user.department_name || "Administration"}
-                </p>
-              </div>
-
-            </div>
-          )}
-
-          {role === "Admin" && (
-            <div className="bg-slate-50 p-4 rounded-xl">
-
-              <p className="text-sm text-slate-400">
-                Access Level
-              </p>
-
-              <p className="font-semibold">
-                Full Administration
-              </p>
-
-            </div>
-          )}
-
-        </div>
-
-
-        {/* Security */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-
-          <div className="flex items-center gap-3 mb-4">
-
-            <Key
-              size={20}
-              className="text-indigo-600"
+import PageHeader from "../../components/PageHeader";
+
+function DashboardT() {
+    const [grades, setGrades] = useState([]);
+    const [assignments, setAssignments] = useState([]);
+    const [courseMaterials, setCourseMaterials] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadDashboard = async () => {
+            setLoading(true);
+            setError("");
+
+            const results = await Promise.allSettled([
+                api.get("/grades/get-my-students"),
+                api.get("/assignment"),
+                api.get("/courseMaterial"),
+            ]);
+
+            if (!isMounted) return;
+
+            const [gradesResult, assignmentsResult, materialsResult] = results;
+            const failedRequest = results.find(
+                (result) =>
+                    result.status === "rejected" &&
+                    result.reason?.response?.status !== 404
+            );
+
+            setGrades(
+                gradesResult.status === "fulfilled"
+                    ? gradesResult.value.data.grades || []
+                    : []
+            );
+
+            setAssignments(
+                assignmentsResult.status === "fulfilled"
+                    ? assignmentsResult.value.data.assignments || []
+                    : []
+            );
+
+            setCourseMaterials(
+                materialsResult.status === "fulfilled"
+                    ? materialsResult.value.data.courseMaterials || []
+                    : []
+            );
+
+            if (failedRequest) {
+                setError(
+                    failedRequest.reason?.response?.data?.message ||
+                        "Some dashboard information could not be loaded."
+                );
+            }
+
+            setLoading(false);
+        };
+
+        loadDashboard();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const dashboardData = useMemo(() => {
+        const uniqueStudents = new Map();
+        const uniqueModules = new Map();
+        const uniqueClasses = new Map();
+
+        grades.forEach((row) => {
+            if (row.student_id) {
+                uniqueStudents.set(row.student_id, row);
+            }
+
+            if (row.module_id) {
+                uniqueModules.set(row.module_id, row);
+            }
+
+            if (row.class_id) {
+                uniqueClasses.set(row.class_id, row);
+            }
+        });
+
+        const ungradedStudents = grades
+            .filter((row) => row.grade === null || row.grade === undefined)
+            .slice(0, 5);
+
+        const upcomingAssignments = assignments
+            .filter((assignment) => {
+                if (!assignment.deadline) return false;
+                return new Date(assignment.deadline) > new Date();
+            })
+            .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+            .slice(0, 5);
+
+        return {
+            students: uniqueStudents.size,
+            modules: uniqueModules.size,
+            classes: uniqueClasses.size,
+            ungradedStudents,
+            upcomingAssignments,
+        };
+    }, [assignments, grades]);
+
+    const stats = [
+        {
+            title: "My Students",
+            value: dashboardData.students,
+            icon: GraduationCap,
+            bg: "bg-blue-100",
+            color: "text-blue-600",
+        },
+        {
+            title: "Assigned Modules",
+            value: dashboardData.modules,
+            icon: BookOpen,
+            bg: "bg-indigo-100",
+            color: "text-indigo-600",
+        },
+        {
+            title: "Assigned Classes",
+            value: dashboardData.classes,
+            icon: Users,
+            bg: "bg-violet-100",
+            color: "text-violet-600",
+        },
+        {
+            title: "Course Materials",
+            value: courseMaterials.length,
+            icon: FileText,
+            bg: "bg-emerald-100",
+            color: "text-emerald-600",
+        },
+    ];
+
+    const studentName = (row) =>
+        `${row.student_first_name || ""} ${row.student_last_name || ""}`.trim() ||
+        "Unknown student";
+
+    return (
+        <div className="p-4 md:p-8 space-y-8">
+            <PageHeader
+                title="Teacher Dashboard"
+                description="An overview of your classes, students, and teaching activity"
             />
 
-            <h2 className="text-xl font-bold">
-              Security
-            </h2>
+            {error && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    {error}
+                </div>
+            )}
 
-          </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                {stats.map((stat) => {
+                    const Icon = stat.icon;
 
-          <button
-            onClick={handleUpdate}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
-          >
-            Change Password
-          </button>
+                    return (
+                        <div
+                            key={stat.title}
+                            className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                        >
+                            <div
+                                className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg}`}
+                            >
+                                <Icon size={24} className={stat.color} />
+                            </div>
 
-        </div>
-
-      </div>
-
-
-      {/* Change Password Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
-
-            <div className="flex items-center justify-between mb-6">
-
-              <h2 className="text-2xl font-bold">
-                Change Password
-              </h2>
-
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-slate-700"
-              >
-                <X size={24} />
-              </button>
-
+                            <p className="mt-6 text-3xl font-bold text-slate-900">
+                                {loading ? "—" : stat.value}
+                            </p>
+                            <p className="mt-1 text-slate-500">{stat.title}</p>
+                        </div>
+                    );
+                })}
             </div>
 
-            <form
-              onSubmit={handleSubmitPassword}
-              className="space-y-5"
-            >
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-orange-100 p-3 text-orange-600">
+                            <ClipboardList size={22} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900">
+                                Students to Grade
+                            </h2>
+                            <p className="text-sm text-slate-500">
+                                Students in your classes without a recorded grade
+                            </p>
+                        </div>
+                    </div>
 
-              <div>
-                <label className="text-sm font-semibold">
-                  Current Password
-                </label>
+                    <div className="mt-6 space-y-4">
+                        {loading ? (
+                            <p className="text-slate-500">Loading students...</p>
+                        ) : dashboardData.ungradedStudents.length > 0 ? (
+                            dashboardData.ungradedStudents.map((row) => (
+                                <div
+                                    key={`${row.student_id}-${row.module_id}`}
+                                    className="flex items-center justify-between border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+                                >
+                                    <div>
+                                        <p className="font-semibold text-slate-800">
+                                            {studentName(row)}
+                                        </p>
+                                        <p className="text-sm text-slate-500">
+                                            {row.module_name || "Unknown module"} · {row.class_name || "Unknown class"}
+                                        </p>
+                                    </div>
+                                    <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700">
+                                        Not graded
+                                    </span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-slate-500">
+                                Every listed student has a recorded grade.
+                            </p>
+                        )}
+                    </div>
+                </section>
 
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={passwordData.currentPassword}
-                  onChange={handleChange}
-                  required
-                  className="w-full mt-2 p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+                <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-purple-100 p-3 text-purple-600">
+                            <CalendarDays size={22} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900">
+                                Upcoming Deadlines
+                            </h2>
+                            <p className="text-sm text-slate-500">
+                                Your next assignment deadlines
+                            </p>
+                        </div>
+                    </div>
 
-              <div>
-                <label className="text-sm font-semibold">
-                  New Password
-                </label>
-
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwordData.newPassword}
-                  onChange={handleChange}
-                  required
-                  className="w-full mt-2 p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold">
-                  Confirm New Password
-                </label>
-
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={passwordData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  className="w-full mt-2 p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3">
-
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {loading ? "Updating..." : "Update Password"}
-                </button>
-
-              </div>
-
-            </form>
-
-          </div>
-
+                    <div className="mt-6 space-y-4">
+                        {loading ? (
+                            <p className="text-slate-500">Loading assignments...</p>
+                        ) : dashboardData.upcomingAssignments.length > 0 ? (
+                            dashboardData.upcomingAssignments.map((assignment) => (
+                                <div
+                                    key={assignment.id}
+                                    className="flex items-center justify-between border-b border-slate-100 pb-4 last:border-0 last:pb-0"
+                                >
+                                    <div>
+                                        <p className="font-semibold text-slate-800">
+                                            {assignment.title || "Untitled assignment"}
+                                        </p>
+                                        <p className="text-sm text-slate-500">
+                                            {assignment.module_name || "Unknown module"}
+                                            {assignment.class_name ? ` · ${assignment.class_name}` : ""}
+                                        </p>
+                                    </div>
+                                    <p className="text-right text-sm font-semibold text-purple-700">
+                                        {new Date(assignment.deadline).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-slate-500">No upcoming assignment deadlines.</p>
+                        )}
+                    </div>
+                </section>
+            </div>
         </div>
-      )}
-
-    </div>
-  );
+    );
 }
 
-export default Profile;
+export default DashboardT;

@@ -49,7 +49,7 @@ function Profile({ role, user }) {
     try {
       setLoading(true);
 
-      await api.put("/auth/update-password", {
+      await api.put("/profile/updateProfile", {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
@@ -66,8 +66,7 @@ function Profile({ role, user }) {
 
     } catch (err) {
       alert(
-        err.response?.data?.message ||
-        "Unable to update password"
+        err.response?.data?.message
       );
     } finally {
       setLoading(false);
@@ -90,21 +89,10 @@ function Profile({ role, user }) {
 
               <div className="w-24 h-24 rounded-full bg-white p-1 shadow-lg">
 
-                <div className="w-full h-full rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-
-                  {user.profile_picture ? (
-                    <img
-                      src={`http://localhost:3000/uploads/${user.profile_picture}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User
-                      size={40}
-                      className="text-indigo-600"
-                    />
-                  )}
-
-                </div>
+                    <div className="w-full h-full rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-3xl font-bold">
+                      {(user.first_name?.[0] || "")}
+                      {(user.last_name?.[0] || "")}
+                  </div>
 
               </div>
 
@@ -223,7 +211,7 @@ function Profile({ role, user }) {
                 </p>
 
                 <p className="font-semibold">
-                  {user.teacher_id || "Not available"}
+                  {user.teacher_profile_id || "Not available"}
                 </p>
               </div>
 
@@ -236,17 +224,6 @@ function Profile({ role, user }) {
                   {user.department_name || "Not assigned"}
                 </p>
               </div>
-
-              <div className="bg-slate-50 p-4 rounded-xl">
-                <p className="text-sm text-slate-400">
-                  Specialization
-                </p>
-
-                <p className="font-semibold">
-                  {user.specialization || "Not specified"}
-                </p>
-              </div>
-
             </div>
           )}
 
